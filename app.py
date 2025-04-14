@@ -1,3 +1,4 @@
+# Import necessary libraries
 import streamlit as st
 import pickle
 import numpy as np
@@ -9,7 +10,7 @@ import base64
 import time
 import math
 
-# Set page configuration
+# Set page configuration with a laptop emoji as favicon
 st.set_page_config(
     page_title="Laptop Price Predictor",
     page_icon="💻",
@@ -17,9 +18,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for styling
+# Apply custom CSS styling to enhance the app's visual appeal
 st.markdown("""
 <style>
+    /* Main header styling with blue bottom border */
     .main-header {
         font-size: 2.5rem;
         color: #2c3e50;
@@ -28,17 +30,20 @@ st.markdown("""
         padding-bottom: 1rem;
         border-bottom: 2px solid #3498db;
     }
+    /* Sub-header styling in blue color */
     .sub-header {
         font-size: 1.5rem;
         color: #3498db;
         margin-bottom: 1rem;
     }
+    /* Container with light background and shadow effect */
     .highlight {
         padding: 20px;
         border-radius: 10px;
         background-color: #f8f9fa;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+    /* Eye-catching gradient background for predictions */
     .prediction-result {
         font-size: 2rem;
         font-weight: bold;
@@ -50,6 +55,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         margin: 20px 0;
     }
+    /* Blue information box with left border accent */
     .info-box {
         background-color: #e8f4f8;
         border-left: 5px solid #3498db;
@@ -57,9 +63,11 @@ st.markdown("""
         margin: 10px 0;
         border-radius: 5px;
     }
+    /* Custom slider styling */
     .stSlider > div > div > div {
         background-color: #3498db !important;
     }
+    /* Button styling with hover effects */
     .stButton > button {
         background-color: #3498db;
         color: white;
@@ -75,12 +83,14 @@ st.markdown("""
         box-shadow: 0 3px 8px rgba(0,0,0,0.3);
         transform: translateY(-2px);
     }
+    /* Flex container for laptop specs */
     .specs-container {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
         margin-top: 20px;
     }
+    /* Individual spec item styling */
     .spec-item {
         background-color: #f1f1f1;
         padding: 10px;
@@ -92,23 +102,27 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Load data and models
+# Load data and models with caching for better performance
 @st.cache_data
 def load_data():
+    # Load our trained pipeline and dataset
     pipe = pickle.load(open('pipe.pkl', 'rb'))
     df = pickle.load(open('df.pkl', 'rb'))
     return pipe, df
 
 pipe, df = load_data()
 
-# Creating sidebar
+# Set up the sidebar for navigation and information
 with st.sidebar:
+    # App title with emojis for better visibility
     st.markdown("<h1 style='text-align: center;'>💻 Laptop Price Predictor</h1>", unsafe_allow_html=True)
     st.image("https://img.freepik.com/free-vector/laptop-concept-illustration_114360-464.jpg", use_column_width=True)
     
+    # Navigation options using radio buttons
     st.markdown("### Navigation")
     app_mode = st.radio("", ["Predict Price", "Explore Data", "About"])
     
+    # Additional information section
     st.markdown("---")
     st.markdown("### Created By")
     st.markdown("ML Enthusiast")
@@ -116,108 +130,114 @@ with st.sidebar:
     st.markdown("#### How it works")
     st.info("This app uses machine learning to predict laptop prices based on specifications. The model was trained on a dataset of laptop prices and features.")
 
-# Main app
+# Main app content based on selected mode
 if app_mode == "Predict Price":
+    # Price prediction section
     st.markdown("<h1 class='main-header'>Laptop Price Predictor</h1>", unsafe_allow_html=True)
     
+    # Display info box with instructions
     st.markdown("""
     <div class="info-box">
     Enter the specifications of the laptop to get an estimated price.
     </div>
     """, unsafe_allow_html=True)
     
-    # Create two columns for input fields
+    # Create two columns for a better layout of input fields
     col1, col2 = st.columns(2)
     
     with col1:
         st.markdown("<h3 class='sub-header'>Basic Specifications</h3>", unsafe_allow_html=True)
         
-        # brand
+        # Brand selection dropdown
         company = st.selectbox('Brand', df['Company'].unique())
         
-        # type of laptop
+        # Type of laptop dropdown
         type = st.selectbox('Type', df['TypeName'].unique())
         
-        # Ram
+        # RAM amount selection
         ram = st.selectbox('RAM (in GB)', [2, 4, 6, 8, 12, 16, 24, 32, 64])
         
-        # weight
+        # Weight input with slider for better UX
         weight = st.number_input('Weight of the Laptop (kg)', min_value=0.5, max_value=5.0, value=1.5, step=0.1)
         
-        # Touchscreen
+        # Touchscreen toggle for yes/no selection
         touchscreen = st.toggle('Touchscreen')
         
-        # IPS
+        # IPS display toggle
         ips = st.toggle('IPS Display')
     
     with col2:
         st.markdown("<h3 class='sub-header'>Display & Performance</h3>", unsafe_allow_html=True)
         
-        # screen size
+        # Screen size selection via slider
         screen_size = st.slider('Screen Size (inches)', min_value=10.0, max_value=18.0, value=15.0, step=0.1)
         
-        # resolution
+        # Screen resolution options
         resolution = st.selectbox('Screen Resolution', [
             '1920x1080', '1366x768', '1600x900', '3840x2160',
             '3200x1800', '2880x1800', '2560x1600', '2560x1440', '2304x1440'
         ])
         
-        # cpu
+        # CPU brand selection
         cpu = st.selectbox('CPU', df['Cpu brand'].unique())
         
-        # gpu
+        # GPU selection
         gpu = st.selectbox('GPU', df['Gpu brand'].unique())
         
-        # os
+        # Operating system selection
         os = st.selectbox('Operating System', df['os'].unique())
     
-    # Storage options
+    # Storage options section
     st.markdown("<h3 class='sub-header'>Storage Options</h3>", unsafe_allow_html=True)
     
     storage_col1, storage_col2 = st.columns(2)
     
     with storage_col1:
-        # hdd
+        # HDD storage capacity selection
         hdd = st.selectbox('HDD (in GB)', [0, 128, 256, 512, 1024, 2048])
     
     with storage_col2:
-        # ssd
+        # SSD storage capacity selection
         ssd = st.selectbox('SSD (in GB)', [0, 8, 128, 256, 512, 1024])
     
-    # Prediction section
+    # Prediction action section
     st.markdown("---")
     predict_col1, predict_col2, predict_col3 = st.columns([1, 2, 1])
     
     with predict_col2:
+        # Large centered button for prediction
         predict_button = st.button('Predict Price', use_container_width=True)
     
+    # When user clicks predict
     if predict_button:
         with st.spinner('Calculating...'):
-            time.sleep(1)  # Simulated delay for better UX
+            # Add a small delay for better UX
+            time.sleep(1)
             
-            # Process inputs
+            # Process boolean inputs
             touchscreen = 1 if touchscreen else 0
             ips = 1 if ips else 0
             
+            # Calculate PPI (pixels per inch) from resolution and screen size
             X_res = int(resolution.split('x')[0])
             Y_res = int(resolution.split('x')[1])
             ppi = ((X_res**2) + (Y_res**2))**0.5/screen_size
             
-            # Create query dataframe
+            # Create the query array for prediction
             query = np.array([company, type, ram, weight, touchscreen, ips, ppi, cpu, hdd, ssd, gpu, os])
             query = query.reshape(1, 12)
             
-            # Predict
+            # Make prediction and exponential transform (model predicts log price)
             predicted_price = np.exp(pipe.predict(query)[0])
             
-            # Show result
+            # Display the prediction result with styling
             st.markdown(f"""
             <div class="prediction-result">
                 Predicted Price: ${predicted_price:,.2f}
             </div>
             """, unsafe_allow_html=True)
             
-            # Show laptop specs summary
+            # Show a summary of selected specifications
             st.markdown("<h3 class='sub-header'>Laptop Specifications Summary</h3>", unsafe_allow_html=True)
             
             st.markdown("""
@@ -261,15 +281,17 @@ if app_mode == "Predict Price":
                 cpu=cpu, gpu=gpu, hdd=hdd, ssd=ssd, os=os
             ), unsafe_allow_html=True)
             
-            # Similar price range laptops
+            # Find similar laptops in the dataset within 10% of predicted price range
             similar_price_laptops = df[
                 (df['Price'] >= predicted_price*0.9) & 
                 (df['Price'] <= predicted_price*1.1)
             ].sample(min(5, len(df[(df['Price'] >= predicted_price*0.9) & (df['Price'] <= predicted_price*1.1)])))
             
+            # Show similar laptops if any found
             if not similar_price_laptops.empty:
                 st.markdown("<h3 class='sub-header'>Similar Laptops in This Price Range</h3>", unsafe_allow_html=True)
                 
+                # Display each similar laptop in an expandable section
                 for i, row in similar_price_laptops.iterrows():
                     with st.expander(f"{row['Company']} - {row['TypeName']} (${row['Price']:,.2f})"):
                         spec_col1, spec_col2 = st.columns(2)
@@ -283,15 +305,16 @@ if app_mode == "Predict Price":
                             st.write(f"**OS:** {row['os']}")
 
 elif app_mode == "Explore Data":
+    # Data exploration section
     st.markdown("<h1 class='main-header'>Explore Laptop Data</h1>", unsafe_allow_html=True)
     
-    # Analytics tabs
+    # Create tabs for different analysis categories
     tab1, tab2, tab3 = st.tabs(["Price Analysis", "Brand Comparison", "Feature Importance"])
     
     with tab1:
         st.markdown("<h3 class='sub-header'>Price Distribution</h3>", unsafe_allow_html=True)
         
-        # Create price distribution plot with matplotlib instead of plotly
+        # Create histogram to visualize price distribution
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.histplot(df['Price'], bins=50, ax=ax)
         ax.set_title("Laptop Price Distribution")
@@ -299,9 +322,10 @@ elif app_mode == "Explore Data":
         ax.set_ylabel("Count")
         st.pyplot(fig)
         
-        # Price ranges
+        # Show breakdown of price ranges
         st.markdown("<h3 class='sub-header'>Price Ranges</h3>", unsafe_allow_html=True)
         
+        # Create price range categories and count laptops in each
         price_ranges = {
             "Budget (<$500)": len(df[df['Price'] < 500]),
             "Mid-range ($500-$1000)": len(df[(df['Price'] >= 500) & (df['Price'] < 1000)]),
@@ -310,7 +334,7 @@ elif app_mode == "Explore Data":
             "Ultra Premium (>$2000)": len(df[df['Price'] >= 2000])
         }
         
-        # Pie chart for price ranges
+        # Create pie chart for price ranges
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.pie(list(price_ranges.values()), labels=list(price_ranges.keys()), autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
@@ -320,7 +344,7 @@ elif app_mode == "Explore Data":
     with tab2:
         st.markdown("<h3 class='sub-header'>Brand Comparison</h3>", unsafe_allow_html=True)
         
-        # Brand price comparison
+        # Create boxplot to compare price distributions by brand
         fig, ax = plt.subplots(figsize=(12, 8))
         sns.boxplot(x='Company', y='Price', data=df, ax=ax)
         ax.set_title("Price Distribution by Brand")
@@ -330,7 +354,7 @@ elif app_mode == "Explore Data":
         plt.tight_layout()
         st.pyplot(fig)
         
-        # Brand market share
+        # Show brand market share
         brand_counts = df['Company'].value_counts()
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.pie(brand_counts.values, labels=brand_counts.index, autopct='%1.1f%%', startangle=90)
@@ -338,7 +362,7 @@ elif app_mode == "Explore Data":
         ax.set_title("Brand Market Share")
         st.pyplot(fig)
         
-        # Average price by brand and type
+        # Show average price by brand and laptop type
         avg_price = df.groupby(['Company', 'TypeName'])['Price'].mean().reset_index()
         
         fig, ax = plt.subplots(figsize=(14, 8))
@@ -353,7 +377,7 @@ elif app_mode == "Explore Data":
     with tab3:
         st.markdown("<h3 class='sub-header'>Feature Analysis</h3>", unsafe_allow_html=True)
         
-        # Correlation between RAM and Price
+        # Analyze correlation between RAM and Price
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.scatterplot(x='Ram', y='Price', data=df, ax=ax)
         ax.set_title("Correlation: RAM vs Price")
@@ -361,7 +385,7 @@ elif app_mode == "Explore Data":
         ax.set_ylabel("Price (USD)")
         st.pyplot(fig)
         
-        # Touchscreen vs Non-touchscreen
+        # Compare prices of touchscreen vs non-touchscreen laptops
         touch_data = df.groupby('Touchscreen')['Price'].mean().reset_index()
         touch_data['Touchscreen'] = touch_data['Touchscreen'].map({0: 'No', 1: 'Yes'})
         
@@ -372,7 +396,7 @@ elif app_mode == "Explore Data":
         ax.set_ylabel("Average Price (USD)")
         st.pyplot(fig)
         
-        # OS comparison
+        # Compare prices by operating system
         os_data = df.groupby('os')['Price'].mean().reset_index()
         
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -385,6 +409,7 @@ elif app_mode == "Explore Data":
         st.pyplot(fig)
 
 else:  # About section
+    # Information about the app and model
     st.markdown("<h1 class='main-header'>About This App</h1>", unsafe_allow_html=True)
     
     st.markdown("""
@@ -418,7 +443,7 @@ else:  # About section
     </div>
     """, unsafe_allow_html=True)
     
-    # Disclaimer
+    # Add a disclaimer about predictions
     st.markdown("---")
     st.warning("""
     **Disclaimer**: The predictions provided by this app are based on historical data and should be used for reference only. 
