@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import plotly.express as px
 from PIL import Image
 import base64
 import time
@@ -292,10 +291,13 @@ elif app_mode == "Explore Data":
     with tab1:
         st.markdown("<h3 class='sub-header'>Price Distribution</h3>", unsafe_allow_html=True)
         
-        # Create price distribution plot
-        fig = px.histogram(df, x="Price", nbins=50, title="Laptop Price Distribution")
-        fig.update_layout(xaxis_title="Price (USD)", yaxis_title="Count", bargap=0.1)
-        st.plotly_chart(fig, use_container_width=True)
+        # Create price distribution plot with matplotlib instead of plotly
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.histplot(df['Price'], bins=50, ax=ax)
+        ax.set_title("Laptop Price Distribution")
+        ax.set_xlabel("Price (USD)")
+        ax.set_ylabel("Count")
+        st.pyplot(fig)
         
         # Price ranges
         st.markdown("<h3 class='sub-header'>Price Ranges</h3>", unsafe_allow_html=True)
@@ -308,53 +310,79 @@ elif app_mode == "Explore Data":
             "Ultra Premium (>$2000)": len(df[df['Price'] >= 2000])
         }
         
-        fig = px.pie(values=list(price_ranges.values()), names=list(price_ranges.keys()), 
-                    title="Laptop Price Ranges", hole=0.4)
-        st.plotly_chart(fig, use_container_width=True)
+        # Pie chart for price ranges
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.pie(list(price_ranges.values()), labels=list(price_ranges.keys()), autopct='%1.1f%%', startangle=90)
+        ax.axis('equal')
+        ax.set_title("Laptop Price Ranges")
+        st.pyplot(fig)
     
     with tab2:
         st.markdown("<h3 class='sub-header'>Brand Comparison</h3>", unsafe_allow_html=True)
         
         # Brand price comparison
-        fig = px.box(df, x="Company", y="Price", title="Price Distribution by Brand")
-        fig.update_layout(xaxis_title="Brand", yaxis_title="Price (USD)")
-        st.plotly_chart(fig, use_container_width=True)
+        fig, ax = plt.subplots(figsize=(12, 8))
+        sns.boxplot(x='Company', y='Price', data=df, ax=ax)
+        ax.set_title("Price Distribution by Brand")
+        ax.set_xlabel("Brand")
+        ax.set_ylabel("Price (USD)")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        st.pyplot(fig)
         
         # Brand market share
         brand_counts = df['Company'].value_counts()
-        fig = px.pie(values=brand_counts.values, names=brand_counts.index, 
-                    title="Brand Market Share")
-        st.plotly_chart(fig, use_container_width=True)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.pie(brand_counts.values, labels=brand_counts.index, autopct='%1.1f%%', startangle=90)
+        ax.axis('equal')
+        ax.set_title("Brand Market Share")
+        st.pyplot(fig)
         
         # Average price by brand and type
         avg_price = df.groupby(['Company', 'TypeName'])['Price'].mean().reset_index()
-        fig = px.bar(avg_price, x="Company", y="Price", color="TypeName", 
-                    title="Average Price by Brand and Type")
-        fig.update_layout(xaxis_title="Brand", yaxis_title="Average Price (USD)")
-        st.plotly_chart(fig, use_container_width=True)
+        
+        fig, ax = plt.subplots(figsize=(14, 8))
+        sns.barplot(x='Company', y='Price', hue='TypeName', data=avg_price, ax=ax)
+        ax.set_title("Average Price by Brand and Type")
+        ax.set_xlabel("Brand")
+        ax.set_ylabel("Average Price (USD)")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        st.pyplot(fig)
     
     with tab3:
         st.markdown("<h3 class='sub-header'>Feature Analysis</h3>", unsafe_allow_html=True)
         
         # Correlation between RAM and Price
-        fig = px.scatter(df, x="Ram", y="Price", trendline="ols",
-                        title="Correlation: RAM vs Price")
-        fig.update_layout(xaxis_title="RAM (GB)", yaxis_title="Price (USD)")
-        st.plotly_chart(fig, use_container_width=True)
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.scatterplot(x='Ram', y='Price', data=df, ax=ax)
+        ax.set_title("Correlation: RAM vs Price")
+        ax.set_xlabel("RAM (GB)")
+        ax.set_ylabel("Price (USD)")
+        st.pyplot(fig)
         
         # Touchscreen vs Non-touchscreen
         touch_data = df.groupby('Touchscreen')['Price'].mean().reset_index()
         touch_data['Touchscreen'] = touch_data['Touchscreen'].map({0: 'No', 1: 'Yes'})
-        fig = px.bar(touch_data, x="Touchscreen", y="Price", 
-                    title="Average Price: Touchscreen vs Non-touchscreen")
-        fig.update_layout(xaxis_title="Touchscreen", yaxis_title="Average Price (USD)")
-        st.plotly_chart(fig, use_container_width=True)
+        
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.barplot(x='Touchscreen', y='Price', data=touch_data, ax=ax)
+        ax.set_title("Average Price: Touchscreen vs Non-touchscreen")
+        ax.set_xlabel("Touchscreen")
+        ax.set_ylabel("Average Price (USD)")
+        st.pyplot(fig)
         
         # OS comparison
         os_data = df.groupby('os')['Price'].mean().reset_index()
-        fig = px.bar(os_data, x="os", y="Price", title="Average Price by Operating System")
-        fig.update_layout(xaxis_title="Operating System", yaxis_title="Average Price (USD)")
-        st.plotly_chart(fig, use_container_width=True)
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x='os', y='Price', data=os_data, ax=ax)
+        ax.set_title("Average Price by Operating System")
+        ax.set_xlabel("Operating System")
+        ax.set_ylabel("Average Price (USD)")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        st.pyplot(fig)
 
 else:  # About section
     st.markdown("<h1 class='main-header'>About This App</h1>", unsafe_allow_html=True)
@@ -385,7 +413,7 @@ else:  # About section
             <li>Streamlit: For the web application framework</li>
             <li>Scikit-learn: For machine learning models</li>
             <li>Pandas & NumPy: For data manipulation</li>
-            <li>Plotly & Matplotlib: For data visualization</li>
+            <li>Matplotlib & Seaborn: For data visualization</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
