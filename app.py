@@ -116,7 +116,7 @@ pipe, df = load_data()
 with st.sidebar:
     # App title with emojis for better visibility
     st.markdown("<h1 style='text-align: center;'>💻 Laptop Price Predictor</h1>", unsafe_allow_html=True)
-    st.image("https://img.freepik.com/free-vector/laptop-concept-illustration_114360-464.jpg", use_column_width=True)
+    st.image("https://foyr.com/learn/wp-content/uploads/2021/03/Best-Laptops-and-Computer-for-3D-Modeling-and-Rendering-in-2023.webp")
     
     # Navigation options using radio buttons
     st.markdown("### Navigation")
@@ -125,10 +125,12 @@ with st.sidebar:
     # Additional information section
     st.markdown("---")
     st.markdown("### Created By")
-    st.markdown("ML Enthusiast")
+    st.markdown("Kanav Singla (2023UCD3014)" \
+    "Utkarsh Dubey (2023UCD3059)" \
+    "Lalit (2023UCD21)" )
     st.markdown("---")
     st.markdown("#### How it works")
-    st.info("This app uses machine learning to predict laptop prices based on specifications. The model was trained on a dataset of laptop prices and features.")
+    st.info("This app uses machine learning techniques to predict laptop prices based on specifications. The model was trained on a dataset of laptop prices and features.")
 
 # Main app content based on selected mode
 if app_mode == "Predict Price":
@@ -357,7 +359,7 @@ elif app_mode == "Explore Data":
         # Show brand market share
         brand_counts = df['Company'].value_counts()
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.pie(brand_counts.values, labels=brand_counts.index, autopct='%1.1f%%', startangle=90)
+        ax.pie(brand_counts.values, autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
         ax.set_title("Brand Market Share")
         st.pyplot(fig)
