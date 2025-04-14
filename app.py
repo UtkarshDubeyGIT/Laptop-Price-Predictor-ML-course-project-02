@@ -125,9 +125,9 @@ with st.sidebar:
     # Additional information section
     st.markdown("---")
     st.markdown("### Created By")
-    st.markdown("Kanav Singla (2023UCD3014)" \
-    "Utkarsh Dubey (2023UCD3059)" \
-    "Lalit (2023UCD21)" )
+    st.markdown("Kanav Singla (2023UCD3014)  \n"
+                "Utkarsh Dubey (2023UCD3059)  \n"
+                "Lalit (2023UCD21)")
     st.markdown("---")
     st.markdown("#### How it works")
     st.info("This app uses machine learning techniques to predict laptop prices based on specifications. The model was trained on a dataset of laptop prices and features.")
@@ -336,11 +336,32 @@ elif app_mode == "Explore Data":
             "Ultra Premium (>$2000)": len(df[df['Price'] >= 2000])
         }
         
-        # Create pie chart for price ranges
+        # Define a colorful palette for the pie chart
+        colors = ['#FF9999', '#66B2FF', '#99FF99', '#FFCC99', '#CC99FF']
+        
+        # Create pie chart for price ranges with explicit colors
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.pie(list(price_ranges.values()), labels=list(price_ranges.keys()), autopct='%1.1f%%', startangle=90)
+        wedges, texts, autotexts = ax.pie(
+            list(price_ranges.values()), 
+            labels=list(price_ranges.keys()), 
+            autopct='%1.1f%%', 
+            startangle=90,
+            colors=colors,
+            explode=[0.05, 0, 0, 0, 0.1]  # Slightly explode the first and last slice
+        )
+        
+        # Enhance text visibility
+        for text in texts:
+            text.set_fontsize(10)
+            text.set_fontweight('bold')
+        
+        for autotext in autotexts:
+            autotext.set_fontsize(9)
+            autotext.set_fontweight('bold')
+            autotext.set_color('white')
+        
         ax.axis('equal')
-        ax.set_title("Laptop Price Ranges")
+        ax.set_title("Laptop Price Ranges", fontsize=14, fontweight='bold')
         st.pyplot(fig)
     
     with tab2:
@@ -359,9 +380,36 @@ elif app_mode == "Explore Data":
         # Show brand market share
         brand_counts = df['Company'].value_counts()
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.pie(brand_counts.values, autopct='%1.1f%%', startangle=90)
+        
+        # Add explicit colors for better visualization
+        brand_colors = plt.cm.tab20(np.linspace(0, 1, len(brand_counts)))
+        
+        # Create pie chart with labels but without percentage text
+        wedges, texts = ax.pie(
+            brand_counts.values, 
+            labels=brand_counts.index, 
+            colors=brand_colors,
+            startangle=90,
+            wedgeprops={'edgecolor': 'white', 'linewidth': 1}
+        )
+        
+        # Enhance label visibility
+        for text in texts:
+            text.set_fontsize(9)
+            text.set_fontweight('bold')
+        
         ax.axis('equal')
-        ax.set_title("Brand Market Share")
+        ax.set_title("Brand Market Share", fontsize=14, fontweight='bold')
+        
+        # Add a legend for better readability
+        ax.legend(
+            wedges, 
+            brand_counts.index,
+            title="Brands",
+            loc="center left",
+            bbox_to_anchor=(1, 0, 0.5, 1)
+        )
+        
         st.pyplot(fig)
         
         # Show average price by brand and laptop type
