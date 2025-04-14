@@ -127,7 +127,7 @@ with st.sidebar:
     st.markdown("### Created By")
     st.markdown("Kanav Singla (2023UCD3014)  \n"
                 "Utkarsh Dubey (2023UCD3059)  \n"
-                "Lalit (2023UCD21)")
+                "Lalit Jorwal(2023UCD2153)")
     st.markdown("---")
     st.markdown("#### How it works")
     st.info("This app uses machine learning techniques to predict laptop prices based on specifications. The model was trained on a dataset of laptop prices and features.")
