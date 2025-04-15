@@ -112,6 +112,14 @@ def load_data():
 
 pipe, df = load_data()
 
+# Add a preprocessing function to sanitize input data
+def preprocess_text_input(text):
+    """Handle potential unicode issues by normalizing text input"""
+    if isinstance(text, str):
+        # Remove non-ASCII characters and normalize text
+        return ''.join(char for char in text if ord(char) < 128)
+    return text
+
 # Set up the sidebar for navigation and information
 with st.sidebar:
     # App title with emojis for better visibility
@@ -229,15 +237,22 @@ if app_mode == "Predict Price":
             query = np.array([company, type, ram, weight, touchscreen, ips, ppi, cpu, hdd, ssd, gpu, os])
             query = query.reshape(1, 12)
             
-            # Make prediction and exponential transform (model predicts log price)
-            predicted_price = np.exp(pipe.predict(query)[0])
+            # Apply preprocessing to string inputs
+            for col in query.columns:
+                if query[col].dtype == 'object':
+                    query[col] = query[col].apply(preprocess_text_input)
             
-            # Display the prediction result with styling
-            st.markdown(f"""
-            <div class="prediction-result">
-                Predicted Price: ${predicted_price:,.2f}
-            </div>
-            """, unsafe_allow_html=True)
+            try:
+                # Make prediction with error handling
+                predicted_price = np.exp(pipe.predict(query)[0])
+                st.markdown(f"""
+                <div class="prediction-result">
+                    Predicted Price: ₹{predicted_price:,.2f}
+                </div>
+                """, unsafe_allow_html=True)
+            except Exception as e:
+                st.error(f"Prediction error: {str(e)}")
+                st.info("Try adjusting your selections or use simpler text values to avoid encoding issues.")
             
             # Show a summary of selected specifications
             st.markdown("<h3 class='sub-header'>Laptop Specifications Summary</h3>", unsafe_allow_html=True)
