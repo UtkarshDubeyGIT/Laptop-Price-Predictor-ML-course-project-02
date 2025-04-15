@@ -4,11 +4,12 @@
 mkdir -p ~/.streamlit/
 
 # Create a Streamlit configuration file with server settings
-echo "[server]
+cat > ~/.streamlit/config.toml << EOT
+[server]
 headless = true
 enableCORS = false
 enableXsrfProtection = false
-" > ~/.streamlit/config.toml
+EOT
 
 # Use environment variable PORT if it exists, otherwise use 8501 as default
 PORT=${PORT:-8501}
@@ -19,12 +20,13 @@ pip install --upgrade numpy==1.23.5
 pip install --upgrade scikit-learn==1.2.2
 
 # Create fallback model if missing
-if [ ! -f "pipe_no_xgb.pkl" ]; then
+if [ ! -f "pipe_no_xgb.pkl" ]
+then
     echo "Main model file (pipe.pkl) may have compatibility issues."
     echo "Creating a simple fallback model..."
     
     # Create a simple python script to generate a basic model
-    cat > create_fallback_model.py << 'EOFMODEL'
+    cat > create_fallback_model.py << EOT
 import pickle
 import numpy as np
 import pandas as pd
@@ -64,13 +66,13 @@ try:
     
 except Exception as e:
     print(f"Error creating fallback model: {e}")
-EOFMODEL
+EOT
 
     # Run the script to create the fallback model
     python create_fallback_model.py
     
     # Create a wrapper to update the app to use the fallback model
-    cat > update_app.py << 'EOFAPP'
+    cat > update_app.py << EOT
 import os
 
 def modify_app_for_fallback():
@@ -99,18 +101,19 @@ def modify_app_for_fallback():
 
 if __name__ == "__main__":
     modify_app_for_fallback()
-EOFAPP
+EOT
     
     # Update the app
     python update_app.py
 fi
 
 # Fix the text encoding in app.py if it exists
-if [ -f "app.py" ]; then
+if [ -f "app.py" ]
+then
     echo "Checking app.py for encoding issues..."
-    # Use sed to replace any non-printable characters with spaces
-    # This helps avoid character encoding errors that may exist
-    sed -i 's/[[:cntrl:]]/ /g' app.py
+    # Use tr instead of sed for better compatibility
+    cat app.py | tr -cd '\11\12\15\40-\176' > app_clean.py
+    mv app_clean.py app.py
 fi
 
 echo "Starting Streamlit app on port $PORT"
